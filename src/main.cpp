@@ -13,17 +13,18 @@ public:
         initWindow();
         initVulkan();
         setupDevices();
+        createLogicalDevice();
         mainLoop();
         cleanup();
     }
 
 private:
-    GLFWwindow* window;
-    const uint32_t width = 800;
-    const uint32_t height = 600;
+    GLFWwindow* window_;
+    const uint32_t WIDTH = 800;
+    const uint32_t HEIGHT = 600;
 
-    VkInstance instance;
-    VkPhysicalDevice device = VK_NULL_HANDLE;
+    VkInstance instance_;
+    VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
@@ -32,6 +33,35 @@ private:
             return graphicsFamily.has_value();
         }
     };
+
+    VkDevice device_;
+    VkQueue graphicsQueue_;
+
+    void createLogicalDevice() {
+        VkPhysicalDeviceFeatures features{};
+        vkGetPhysicalDeviceFeatures(physicalDevice_, &features);
+
+        QueueFamilyIndices indices = findQueueFamilies(physicalDevice_);
+
+        VkDeviceQueueCreateInfo queueCreateInfo{};
+        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+        queueCreateInfo.queueCount = 1;
+        float queuePriority = 1.0f;
+        queueCreateInfo.pQueuePriorities = &queuePriority;
+
+        VkDeviceCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.pQueueCreateInfos = &queueCreateInfo;
+        createInfo.queueCreateInfoCount = 1;
+        createInfo.pEnabledFeatures = &features;
+
+        if (vkCreateDevice(physicalDevice_, &createInfo, nullptr, &device_) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create logical device!");
+        }
+
+        vkGetDeviceQueue(device_, indices.graphicsFamily.value(), 0, &graphicsQueue_);
+    }
 
     QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& device) {
         QueueFamilyIndices indices;
@@ -73,7 +103,7 @@ private:
         createInfo.ppEnabledExtensionNames = glfwExtensions;
         createInfo.enabledLayerCount = 0;
     
-        VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
+        VkResult result = vkCreateInstance(&createInfo, nullptr, &instance_);
         if (result != VK_SUCCESS) {
             throw std::runtime_error("failed to create instance!");
         }
@@ -84,23 +114,23 @@ private:
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-        window = glfwCreateWindow(width, height, "Vulkan", nullptr, nullptr);
+        window_ = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
     }
 
     void setupDevices() {
         uint32_t deviceCount;
-        vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+        vkEnumeratePhysicalDevices(instance_, &deviceCount, nullptr);
         std::vector<VkPhysicalDevice> availableDevices(deviceCount);
-        vkEnumeratePhysicalDevices(instance, &deviceCount, availableDevices.data());
+        vkEnumeratePhysicalDevices(instance_, &deviceCount, availableDevices.data());
 
         for (const auto& availableDevice : availableDevices) {
             if (isDeviceSuitable(availableDevice)) {
-                device = availableDevice;
+                physicalDevice_ = availableDevice;
                 break;
             }
         }
 
-        if (device == VK_NULL_HANDLE) {
+        if (physicalDevice_ == VK_NULL_HANDLE) {
             throw std::runtime_error("failed to find a suitable GPU!");
         }
     }
@@ -117,15 +147,16 @@ private:
     }
 
     void mainLoop() {
-        while (!glfwWindowShouldClose(window)) {
+        while (!glfwWindowShouldClose(window_)) {
             glfwPollEvents();
         }
     }
 
     void cleanup() {
-        vkDestroyInstance(instance, nullptr);
+        vkDestroyDevice(device_, nullptr);
+        vkDestroyInstance(instance_, nullptr);
 
-        glfwDestroyWindow(window);
+        glfwDestroyWindow(window_);
         glfwTerminate();
     }    
 };
