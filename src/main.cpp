@@ -112,9 +112,7 @@ private:
         vkGetPhysicalDeviceFeatures(device, &features);
 
         QueueFamilyIndices indices = findQueueFamilies(device);
-
-        return properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
-            features.geometryShader &&
+        return features.geometryShader &&
             indices.isComplete();
     }
 
