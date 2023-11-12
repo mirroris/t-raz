@@ -3,10 +3,10 @@
 SRCS:= engine.cpp
 
 # compiler
-CC:= g++ 
+CC:= g++ -g
 
 # option
-CFLAG = -Wall -m64 -std=c++17 -O2 
+CFLAG = -Wall -m64 -std=c++17 
 
 MOPT = MMD MP
 
