@@ -12,6 +12,7 @@
 #include <set>
 #include <limits>
 #include <algorithm>
+#include <fstream>
 
 
 class TriApp {
@@ -132,12 +133,29 @@ private:
     }
 
     void createGraphicsPipeline() {
-        auto vertexShaderCode = readFile("shades/shader.vert");
-        auto fragShaderCode = readFile("shades/shader.frag");
+        auto vertexShaderCode = readFile("shaders/shader.vert");
+        auto fragShaderCode = readFile("shaders/shader.frag");
         // create a vkShaderWrapper
+        VkShaderModule vertexShaderModule = createShaderModule(vertexShaderCode);
+        VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
+
+        vkDestroyShaderModule(logicalDevice_, vertexShaderModule, nullptr);
+        vkDestroyShaderModule(logicalDevice_, fragShaderModule, nullptr);
     }
 
-    vector<char> readFile(const string& fileName) {
+    VkShaderModule createShaderModule(const std::vector<char>& code) {
+        VkShaderModuleCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        createInfo.codeSize = code.size();
+        createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+        VkShaderModule shaderModule;
+        if (vkCreateShaderModule(logicalDevice_, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create shader module");
+        }
+        return shaderModule;
+    }
+
+    static std::vector<char> readFile(const std::string& fileName) {
         std::ifstream file(fileName, std::ios::ate | std::ios::binary);
 
         if (!file.is_open()) {
@@ -146,7 +164,7 @@ private:
 
         size_t size = (size_t) file.tellg();
         std::vector<char> ret(size);
-        file.seek(0);
+        file.seekg(0);
         file.read(ret.data(), size);
         file.close();
         return ret;
