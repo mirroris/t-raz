@@ -139,6 +139,22 @@ private:
         VkShaderModule vertexShaderModule = createShaderModule(vertexShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
 
+        // vertexShaderStageCreateInfo
+        VkPipelineShaderStageCreateInfo vertexShaderStageInfo{};
+        vertexShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        vertexShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+        vertexShaderStageInfo.module = vertexShaderModule;
+        vertexShaderStageInfo.pName = "main";
+
+        // fragShaderStageCreateInfo
+        VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+        fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        fragShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+        fragShaderStageInfo.module = fragShaderModule;
+        fragShaderStageInfo.pName = "main";
+
+        VkPipelineShaderStageCreateInfo shaderStages[] = {vertexShaderStageInfo, fragShaderStageInfo};
+
         vkDestroyShaderModule(logicalDevice_, vertexShaderModule, nullptr);
         vkDestroyShaderModule(logicalDevice_, fragShaderModule, nullptr);
     }
