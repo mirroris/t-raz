@@ -201,6 +201,11 @@ private:
         createImageView();
         createRenderPass();
         createGraphicsPipeline();
+        createCommandPool();
+    }
+    
+    void createCommandPool() {
+
     }
 
     void setupDebugMessenger() {
