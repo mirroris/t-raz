@@ -2,7 +2,7 @@
 toy Vulkan render 
 
 # preliminaries
-implemented GPU and the GPU has to be implemented GPU.
+implemented GPU
 
 ## code-styled Vulkan
 I implemented toy-render with Vulkan following Google CodeStyle.
