@@ -810,6 +810,8 @@ private:
             glfwPollEvents();
             drawFrame();
         }
+
+        vkDeviceWaitIdle(logicalDevice_);
     }
 
     void drawFrame(){
